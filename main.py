@@ -41,20 +41,32 @@ def gen_rand_data():
     classB = [(random.normalvariate(0.0, 0.5), random.normalvariate(-0.5, 0.5), -1.0) for i in range(10)]
     data = classA + classB
     random.shuffle(data)
-    print(data)
     return data
+
+def cluster_plot(A, B):
+    pylab.hold(True)
+    pylab.plot([p[0] for p in A], [p[1] for p in B], 'bo')
+    pylab.plot([p[0] for p in B], [p[1] for p in B], 'ro')
+    pylab.show()
 
 def main():
     data = gen_rand_data()
-    in_set = [[1., 2., 1.], [7., 5., -1.], [2., 4., 1.]]
+    #data = [[1., 2., 1.], [7., 5., -1.], [2., 4., 1.], [3., 3., 1.]]
     P = p_matix(data)
     q, h, G = build_qGh(len(data))
-    print(q)
     r = qp(P, q, G, h)
     alpha = list(r['x'])
+    #for s in range(len(alpha)):
+    #    data[s].append(alpha[s])
+    #data = [s for s in data if s[3] > math.pow(10.,-5)]
+    
+    pos = [s for s in data if s[2] > 0]
+    neg = [s for s in data if s[2] < 0]
 
-
-
-
-
+    #ind = []
+    #for i in range(len(data)):
+    #    ind.append(data[i][3]*data[i][2]*kernel([8., 6.], [data[i][0], data[i][1]]))
+    #ind = sum(ind)
+    
+    cluster_plot(pos, neg)
 main()
