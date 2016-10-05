@@ -6,7 +6,7 @@ import numpy, pylab, random, math
 
 def kernel(x, y):
     return numpy.dot(numpy.transpose(x), y)+1
-
+    #return math.pow(numpy.dot(numpy.transpose(x),y)+1,2)
 def p_matix(in_set):
     print('Creating P matrix...')
     P = []
@@ -36,37 +36,44 @@ def build_qGh(n):
     return q, h, G
 
 def gen_rand_data():
-    classA = [(random.normalvariate(-1.5, 1), random.normalvariate(0.5, 1),1.0) for i in range(5)] + \
-    [(random.normalvariate(1.5, 1), random.normalvariate(0.5, 1), 1.0) for i in range(5)]
-    classB = [(random.normalvariate(0.0, 0.5), random.normalvariate(-0.5, 0.5), -1.0) for i in range(10)]
+    classA = [[random.normalvariate(-1.5, 1), random.normalvariate(0.5, 1),1.0] for i in range(5)] + \
+    [[random.normalvariate(1.5, 1), random.normalvariate(0.5, 1), 1.0] for i in range(5)]
+    classB = [[random.normalvariate(0.0, 0.5), random.normalvariate(-0.5, 0.5), -1.0] for i in range(10)]
     data = classA + classB
     random.shuffle(data)
     return data
 
-def cluster_plot(A, B):
+def indicator(new, data):
+    ind = []
+    data = [s for s in data if s[3] > math.pow(10.,-5)]
+    for i in range(len(data)):
+        ind.append(data[i][3]*data[i][2]*kernel(new, [data[i][0], data[i][1]]))
+    return sum(ind)
+
+def cluster_plot(A, B, data):
     pylab.hold(True)
-    pylab.plot([p[0] for p in A], [p[1] for p in B], 'bo')
+    pylab.plot([p[0] for p in A], [p[1] for p in A], 'bo')
     pylab.plot([p[0] for p in B], [p[1] for p in B], 'ro')
+
+    x_range = numpy.arange(-4, 4, 0.05)
+    y_range = numpy.arange(-4, 4, 0.05)
+    grid = matrix([[indicator([x,y], data) for y in y_range] for x in x_range])
+    pylab.contour(x_range,y_range,grid,(-1.0,0.0,1.0),colors=('red','black','blue'),linewidths=(1,3,1))
     pylab.show()
 
 def main():
     data = gen_rand_data()
-    #data = [[1., 2., 1.], [7., 5., -1.], [2., 4., 1.], [3., 3., 1.]]
+    #data = [[1., 2., 1.], [7., 5., -1.], [2., 4., 1.], [3., 3., 1.], [-4., 4., -1.]]
     P = p_matix(data)
     q, h, G = build_qGh(len(data))
     r = qp(P, q, G, h)
     alpha = list(r['x'])
-    #for s in range(len(alpha)):
-    #    data[s].append(alpha[s])
-    #data = [s for s in data if s[3] > math.pow(10.,-5)]
+    for s in range(len(alpha)):
+        data[s].append(alpha[s])
     
     pos = [s for s in data if s[2] > 0]
     neg = [s for s in data if s[2] < 0]
 
-    #ind = []
-    #for i in range(len(data)):
-    #    ind.append(data[i][3]*data[i][2]*kernel([8., 6.], [data[i][0], data[i][1]]))
-    #ind = sum(ind)
     
-    cluster_plot(pos, neg)
+    cluster_plot(pos, neg, data)
 main()
